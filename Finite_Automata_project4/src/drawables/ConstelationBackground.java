@@ -6,23 +6,20 @@ import java.awt.Rectangle;
 import java.util.Random;
 
 public class ConstelationBackground implements Drawable{
-	private Rectangle rect;
+	private Rectangle boundary;
 	private Particle particles[];
 	private Random r = new Random();
 
-	public ConstelationBackground(int particle_count, Rectangle rect) {
-		this.rect = rect;
+	public ConstelationBackground(int particle_count, Rectangle boundary) {
+		this.boundary = boundary;
 		
 		particles = new Particle[particle_count];
 		for(int p=0; p<particle_count; p++) {
-			particles[p] = new Particle(rect);
+			particles[p] = new Particle();
 		}
 	}
-	public void updateBoundary(Rectangle rect) {
-		this.rect = rect;
-		for(int p=0; p<particles.length; p++) {
-			particles[p].boundary = rect;
-		}
+	public void updateBoundary(Rectangle boundary) {
+		this.boundary = boundary;
 	}
 	@Override
 	public void onDraw(Graphics2D g2d) {
@@ -59,11 +56,9 @@ public class ConstelationBackground implements Drawable{
 		float x,y,angle,speed,x_iterator,y_iterator;
 		int size,alpha;
 		Color color;
-		Rectangle boundary;
 		
-		public Particle(Rectangle boundary) {
+		public Particle() {
 			size = 10;
-			this.boundary = boundary;
 			reset();
 		}
 		@Override
@@ -88,8 +83,8 @@ public class ConstelationBackground implements Drawable{
 			
 		}
 		private void reset() {
-			x = r.nextInt(rect.width);
-			y = r.nextInt(rect.height);
+			x = r.nextInt(boundary.width);
+			y = r.nextInt(boundary.height);
 			angle = r.nextInt(360);
 			speed = 0.05f * (1 + r.nextInt(20));
 			x_iterator = (float)(Math.cos(Math.toDegrees(angle)) * speed);
