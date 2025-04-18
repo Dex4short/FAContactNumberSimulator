@@ -69,13 +69,15 @@ public class Window extends JFrame{
 			@Override
 			public void onNext() {
 				Window.this.remove(welcome_panel);
+
+				simulation_panel = new SimulationPanel();	
 				Window.this.add(simulation_panel);
+				
 				Window.this.revalidate();
 			}
 		};
 		add(welcome_panel);
-		
-		simulation_panel = new SimulationPanel();		
+			
 		
 	}
 

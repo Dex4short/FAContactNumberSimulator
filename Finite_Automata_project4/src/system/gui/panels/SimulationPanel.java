@@ -85,7 +85,7 @@ public class SimulationPanel extends JPanel{
 				visual_panel.setBounds(0, 50, width, height-250);
 				footer_panel.setBounds(0, (height-200)+(4*raise), width, 200);
 			}
-		}, 3000, 20);
+		}, 2000, 20);
 	}
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
