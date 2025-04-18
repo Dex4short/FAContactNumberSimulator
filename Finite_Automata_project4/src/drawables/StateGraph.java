@@ -1,12 +1,16 @@
 package drawables;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Random;
 
 public class StateGraph implements Drawable{
+	private Random r;
+	
 	public static Color 
 		blue = new Color(48, 126, 150),
 		darkblue = new Color(17, 45, 53),
@@ -20,6 +24,8 @@ public class StateGraph implements Drawable{
 	public boolean showInputTransitions;
 	
 	public StateGraph() {
+		r = new Random();
+		
 		x_origin = 0;
 		y_origin = 0;
 		showInputTransitions = true;
@@ -58,6 +64,9 @@ public class StateGraph implements Drawable{
 	}
 	
 	public class State implements Drawable{
+		private float alpha;
+		private int timming;
+		
 		public Point point;
 		public String label;
 		public Color bg_color, fg_color;
@@ -70,13 +79,31 @@ public class StateGraph implements Drawable{
 			bg_color = white;
 			fg_color = darkblue;
 			
+			alpha = 0.0f;
+			timming = r.nextInt(64);
+			
 			this.label = label;
 			this.transitions = new Transition[0];
 		}
 		@Override
 		public void onDraw(Graphics2D g2d) {
-			for(int t=0; t<transitions.length; t++) {
-				transitions[t].draw(g2d);
+			if(alpha!=1f) {
+				if(timming!=0) {
+					timming--;
+				}
+				if(timming==0 && alpha<1f) {
+					alpha += 0.05f;
+					if(alpha>=1f) {
+						alpha=1f;
+					}
+				}
+				g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+			}
+			
+			if(timming==0) {
+				for(int t=0; t<transitions.length; t++) {
+					transitions[t].draw(g2d);
+				}
 			}
 			
 			g2d.setColor(bg_color);
@@ -91,7 +118,8 @@ public class StateGraph implements Drawable{
 				point.x-(g2d.getFontMetrics(font).stringWidth(label)/2),
 				point.y+(g2d.getFontMetrics(font).getAscent()/2)
 			);
-			
+
+			if(alpha != 1f) g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 		}
 		public void setTransitions(Transition transitions[]) {
 			if(transitions == null) {
@@ -107,6 +135,8 @@ public class StateGraph implements Drawable{
 	}
 	
 	public class Transition implements Drawable{
+		private float line_iterator, line_speed;
+		
 		public Point point;
 		public String label;
 		public Color line_color, fill_color;;
@@ -116,6 +146,9 @@ public class StateGraph implements Drawable{
 		public int x_center, y_center, size=20;
 		
 		public Transition(String label, char input[], State next_state) {
+			line_iterator = 0.1f;
+			line_speed = 0.01f * (2+r.nextInt(3));
+			
 			point = new Point(50,50);
 			line_color = white;
 			fill_color = blue;
@@ -124,11 +157,11 @@ public class StateGraph implements Drawable{
 			this.input = input;
 			this.next_state = next_state;
 		}
+		private int x_head, y_head;
 		@Override
 		public void onDraw(Graphics2D g2d) {
-			g2d.setColor(line_color);
-			g2d.drawLine(point.x, point.y, next_state.point.x, next_state.point.y);
-			 
+			if(line_iterator<1f) line_iterator += line_speed;
+
 			angle = Math.atan2(
 				next_state.point.y-point.y,
 				next_state.point.x-point.x
@@ -138,22 +171,28 @@ public class StateGraph implements Drawable{
 				Math.pow(Math.abs(next_state.point.x-point.x), 2)
 				+
 				Math.pow(Math.abs(next_state.point.y-point.y), 2)
-			);
+			) * line_iterator;
 
+			x_head = (int)Math.round(point.x + (Math.cos(angle) * (length-(next_state.size/2))));
+			y_head = (int)Math.round(point.y + (Math.sin(angle) * (length-(next_state.size/2))));
+			
+			g2d.setColor(line_color);
+			g2d.drawLine(point.x, point.y, x_head, y_head); 
 			g2d.fillPolygon(
 				new int[] {
-					(int)Math.round(next_state.point.x - (Math.cos(angle+Math.toRadians(10)) * ((next_state.size/2)+10))),
-					(int)Math.round(point.x + (Math.cos(angle) * (length-(next_state.size/2)))),
-					(int)Math.round(next_state.point.x - (Math.cos(angle-Math.toRadians(10)) * ((next_state.size/2)+10)))}, 
+					x_head + (int)Math.round(Math.cos(angle - Math.toRadians(160))*10),
+					x_head,
+					x_head + (int)Math.round(Math.cos(angle + Math.toRadians(160))*10)
+				},
 				new int[] {
-					(int)Math.round(next_state.point.y - (Math.sin(angle+Math.toRadians(10)) * ((next_state.size/2)+10))),
-					(int)Math.round(point.y + (Math.sin(angle) * (length-(next_state.size/2)))),
-					(int)Math.round(next_state.point.y - (Math.sin(angle-Math.toRadians(10)) * ((next_state.size/2)+10)))
+					y_head + (int)Math.round(Math.sin(angle - Math.toRadians(160))*10),
+					y_head,
+					y_head + (int)Math.round(Math.sin(angle + Math.toRadians(160))*10)
 				},
 				3
 			);
 			
-			if(showInputTransitions) {
+			if(showInputTransitions && line_iterator>=1f) {
 				x_center = (int)Math.round(point.x+(Math.cos(angle)*(length/2)));
 				y_center = (int)Math.round(point.y+(Math.sin(angle)*(length/2)));
 				

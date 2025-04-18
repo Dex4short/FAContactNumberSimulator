@@ -1,6 +1,8 @@
 package system.gui.panels;
 
 import java.awt.Color;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
@@ -9,6 +11,7 @@ public class SimulationPanel extends JPanel{
 	private VisualPanel visual_panel;
 	private HeaderPanel header_panel;
 	private FooterPanel footer_panel;
+	private int width, height, raise;
 
 	public SimulationPanel() {
 		setOpaque(false);
@@ -68,13 +71,32 @@ public class SimulationPanel extends JPanel{
 		};
 		add(footer_panel);
 		
+		new Timer().scheduleAtFixedRate(new TimerTask() {
+			{
+				raise=50;
+			}
+			@Override
+			public void run() {
+				raise--;
+				if(raise==0) {
+					cancel();
+				}
+				header_panel.setBounds(0, 0-raise, width, 50);
+				visual_panel.setBounds(0, 50, width, height-250);
+				footer_panel.setBounds(0, (height-200)+(4*raise), width, 200);
+			}
+		}, 3000, 20);
 	}
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-		header_panel.setBounds(0, 0, width, 50);
+		
+		this.width = width;
+		this.height = height;
+		
+		header_panel.setBounds(0, 0-raise, width, 50);
 		visual_panel.setBounds(0, 50, width, height-250);
-		footer_panel.setBounds(0, height-200, width, 200);
+		footer_panel.setBounds(0, (height-200)+(4*raise), width, 200);
 	}
 	
 
